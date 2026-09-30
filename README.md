@@ -213,6 +213,7 @@ $$
 $$
 
 Secara aljabar linear, dimensi komputasinya adalah:
+
 $$
 (5 \times 4) \times (4 \times 1) \longrightarrow (5 \times 1)
 $$
@@ -254,13 +255,15 @@ L(w) = \frac{1}{N} (Xw - y)^T (Xw - y) = \frac{1}{N} \left( w^T X^T X w - 2 y^T 
 $$
 
 Turunan matriks terhadap $w$:
+
 $$
 \nabla_w L = \frac{\partial L}{\partial w} = \frac{2}{N} X_{\text{norm}}^T (X_{\text{norm}} w - y) = \frac{2}{N} X_{\text{norm}}^T e
 $$
 
 #### Pemeriksaan Konsistensi Dimensi:
+
 $$
-\underbrace{X_{\text{norm}}^T}_{(4 \times 5)} \times \underbrace{e}_{(5 \times 1)} \longrightarrow \underbrace{\nabla_w L}_{(4 \times 1)}
+X_{\text{norm}}^T (4 \times 5) \times e (5 \times 1) \longrightarrow \nabla_w L (4 \times 1)
 $$
 
 ---
