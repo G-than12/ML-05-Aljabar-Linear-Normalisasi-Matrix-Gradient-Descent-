@@ -19,6 +19,7 @@
 
 [📌 Identitas Mahasiswa](#-identitas-mahasiswa) •
 [📖 Pendahuluan & Filosofi](#-pendahuluan--filosofi-aljabar-linear--optimasi-dalam-machine-learning) •
+[📐 Pipeline Flowchart & Arsitektur](#-pipeline-flowchart--arsitektur-sistem) •
 [📚 Penjelasan Materi & Teori](#-penjelasan-materi--teori-lengkap) •
 [💻 Bedah Kode & Cara Kerja di Notebook](#-bedah-kode--cara-kerja-di-notebook) •
 [📊 Analisis Hasil & Visualisasi](#-analisis-hasil--visualisasi) •
@@ -74,53 +75,88 @@ Repositori ini menyajikan implementasi mandiri (*from scratch*) tanpa menggunaka
 
 ---
 
-## 📚 Penjelasan Materi & Teori Lengkap
+## 📐 Pipeline Flowchart & Arsitektur Sistem
 
-Alur kerja algoritmik dari modul praktikum ini terangkum dalam diagram berikut:
+Berikut adalah representasi visual diagram alir (*flowchart*) dan arsitektur teks pipeline yang memetakan seluruh siklus pembelajaran mesin dari data mentah, normalisasi matriks, optimasi gradient descent, hingga inferensi mahasiswa baru:
+
+### Pipeline Flowchart
+
+```mermaid
+flowchart TD
+    subgraph S1["1. Data Preparation & Normalization"]
+        A["Data Mentah X: 5 Mahasiswa × 4 Fitur<br/>Vektor Target y: 1=Layak, 0=Belum"] --> B["Ekstraksi Parameter Skalasi<br/>X_min & X_max per Fitur (axis=0)"]
+        B --> C["Normalisasi Min-Max<br/>X_norm = (X - X_min) / (X_max - X_min)"]
+        C --> D["Verifikasi Matriks Ternormalisasi<br/>Rentang Seragam [0, 1]"]
+    end
+
+    subgraph S2["2. Forward Pass & Loss Evaluation"]
+        E["Inisialisasi Vektor Bobot<br/>w = [0.35, 0.30, -0.20, 0.25]ᵀ"] --> F["Perkalian Matriks (Forward Pass)<br/>y_pred = X_norm @ w  (Dimensi 5×1)"]
+        D --> F
+        F --> G["Kalkulasi Residual Error<br/>e = y_pred - y"]
+        G --> H["Evaluasi Loss Function (MSE)<br/>Loss = (1/N) Σ e²  (Awal: 0.064265)"]
+    end
+
+    subgraph S3["3. Backward Pass & Training Loop"]
+        H --> I["Kalkulasi Gradien Turunan Parsial<br/>∇_w L = (2/N) X_normᵀ @ e  (Dimensi 4×1)"]
+        I --> J["Pembaruan Bobot (Update Rule)<br/>w_baru = w - α · ∇_w L  (α = 0.1)"]
+        J --> K{"Cek Stopping Criterion<br/>Loss < 0.001 atau Iterasi == 1000?"}
+        K -- "Belum Konvergen (Iterasi < 1000)" --> F
+        K -- "Konvergen / Selesai (Iterasi 1000)" --> L["Bobot Terlatih Optimal w*<br/>[0.7023, 0.5214, -0.1248, -0.1043]ᵀ<br/>Loss Akhir: 0.027460 (Turun 57.3%)"]
+    end
+
+    subgraph S4["4. Inferensi Mahasiswa Baru & Klasifikasi"]
+        M["Data Mahasiswa Baru (X_baru)<br/>2 Profil Kandidat"] --> N["Normalisasi dengan Parameter Training<br/>X_baru_norm = (X_baru - X_min) / (X_max - X_min)"]
+        L --> O["Kalkulasi Skor Kelayakan<br/>Score = X_baru_norm @ w*"]
+        N --> O
+        O --> P{"Ambang Batas Keputusan<br/>Score ≥ 0.45?"}
+        P -- "Ya" --> Q1["Status: LAYAK 🟢<br/>Mhs 1 (0.920) & Mhs 2 (0.537)"]
+        P -- "Tidak" --> Q2["Status: BELUM LAYAK 🔴"]
+    end
+
+    subgraph S5["5. Modifikasi Bertahap & Eksperimen"]
+        L --> T1["Tugas 1: Simulasi 3 Mahasiswa Baru<br/>Fani: 0.6562 (Layak)<br/>Gita: 1.0385 (Layak)<br/>Hadi: 0.0330 (Belum)"]
+        L --> T2["Tugas 2: Eksperimen Learning Rate<br/>α = 0.01, 0.05, 0.10, 0.50<br/>Analisis Kecepatan Konvergensi"]
+        L --> T3["Tugas 3: Analisis Stopping Criterion<br/>Target: 0.01, 0.001, 0.0001<br/>Pembuktian Batas Bawah OLS = 0.019482"]
+    end
+```
+
+### Architectural Text Pipeline
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        ALUR KERJA MACHINE LEARNING                     │
-└────────────────────────────────────────────────────────────────────────┘
-
-  [STEP 1-3] DATA PREPARATION
-  ┌───────────────────────┐      ┌─────────────────────────┐
-  │   Data Mentah (X)     │ ───> │  Normalisasi Min-Max    │
-  │  (5 Mhs × 4 Fitur)    │      │  x' = (x - min)/(max-min│
-  └───────────────────────┘      └────────────┬────────────┘
-                                              │
-  [STEP 4-6] FORWARD PASS & EVALUASI          ▼
-  ┌───────────────────────┐      ┌─────────────────────────┐
-  │   Inisialisasi Bobot  │ ───> │   Prediksi Skor         │
-  │   w = [0.35, 0.30...] │      │   y_hat = X_norm @ w    │
-  └───────────────────────┘      └────────────┬────────────┘
-                                              │
-                                              ▼
-                                 ┌─────────────────────────┐
-                                 │   Fungsi Loss (MSE)     │
-                                 │   L = (1/N) Σ (y_hat-y)²│
-                                 └────────────┬────────────┘
-                                              │
-  [STEP 7-9] BACKWARD PASS & TRAINING         ▼
-  ┌───────────────────────┐      ┌─────────────────────────┐
-  │   Update Bobot        │ <─── │   Hitung Gradien        │
-  │   w = w - α · ∇L      │      │   ∇L = (2/N) X_norm^T e │
-  └───────────┬───────────┘      └─────────────────────────┘
-              │
-              ▼
-  ┌───────────────────────┐      ┌─────────────────────────┐
-  │  Cek Stopping / Epoch │ ───> │   Bobot Optimal (w*)    │
-  │  (Ulangi Loop)        │      └────────────┬────────────┘
-  └───────────────────────┘                   │
-                                              ▼
-  [STEP 10-12] INFERENSI DATA BARU
-  ┌───────────────────────┐      ┌─────────────────────────┐
-  │ Data Mahasiswa Baru   │ ───> │ Klasifikasi Threshold   │
-  │ Score = X_baru_norm @w│      │ Score ≥ 0.45 --> LAYAK  │
-  └───────────────────────┘      └─────────────────────────┘
+[RAW DATA: 5 Mahasiswa × 4 Fitur: Kehadiran, IPK, Penghasilan, Prestasi]
+   │
+   ├─► [DATA PREPARATION] Ekstraksi Parameter: X_min & X_max (axis=0)
+   │        │
+   │        └─► [MIN-MAX SCALING] X_norm = (X - X_min) / (X_max - X_min) ──► Skala Seragam [0, 1]
+   │
+   ├─► [FORWARD PASS] Inisialisasi Bobot: w = [0.35, 0.30, -0.20, 0.25]^T
+   │        │
+   │        └─► Matriks @ Vektor: y_pred = X_norm @ w (Dimensi 5×4 @ 4×1 ──► 5×1)
+   │
+   ├─► [LOSS EVALUATION] Error: e = y_pred - y ──► MSE Loss: (1/N) * Σ e^2 (Loss Awal: 0.064265)
+   │
+   ├─► [BACKWARD PASS] Turunan Parsial Matriks: ∇_w L = (2/N) * X_norm^T @ e (Dimensi 4×1)
+   │
+   ├─► [TRAINING LOOP (1000 Epochs)] Update Rule: w = w - α * ∇_w L (Learning Rate α = 0.1)
+   │        │
+   │        ├─► Monitoring per 50 Iterasi: Loss 0.064265 ──► 0.027460 (Turun 57.3%)
+   │        └─► Bobot Optimal: w* = [0.7023, 0.5214, -0.1248, -0.1043]^T
+   │
+   ├─► [INFERENCE DATA BARU] Menggunakan parameter training X_min & X_max (Anti Data Leakage)
+   │        │
+   │        ├─► Score = X_baru_norm @ w* ──► [Mahasiswa 1: 0.920, Mahasiswa 2: 0.537]
+   │        └─► Decision Rule (Score ≥ 0.45) ──► Keduanya: LAYAK 🟢
+   │
+   └─► [EKSPERIMEN & MODIFIKASI BERTAHAP]
+            │
+            ├─► Tugas 1: Evaluasi 3 Mahasiswa Baru (Fani: LAYAK, Gita: LAYAK, Hadi: BELUM)
+            ├─► Tugas 2: Eksperimen Learning Rate (α = 0.01, 0.05, 0.10, 0.50)
+            └─► Tugas 3: Analisis Batas Bawah OLS Teoritis (MSE Min = 0.019482)
 ```
 
 ---
+
+## 📚 Penjelasan Materi & Teori Lengkap
 
 ### 1. Representasi Vektor dan Matriks Fitur
 
