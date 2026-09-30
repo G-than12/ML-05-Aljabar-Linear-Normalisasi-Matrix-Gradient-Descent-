@@ -12,7 +12,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
 <p align="center">
-  <b>Dokumentasi komprehensif, eksplorasi teori matematis, bedah kode baris demi baris, dan analisis komputasional aljabar linear untuk Machine Learning: Dari Representasi Vektor & Matriks, Normalisasi Min-Max, Perumusan Skor Model ($X @ w$), Evaluasi Loss Function (MSE), Penurunan Analitis Gradien ($\nabla_w L$), Algoritma Optimasi Gradient Descent, hingga Studi Kasus Penilaian Kelayakan Beasiswa Mahasiswa.</b>
+  <b>Dokumentasi komprehensif, eksplorasi teori matematis, bedah kode baris demi baris, dan analisis komputasional aljabar linear untuk Machine Learning: Dari Representasi Vektor & Matriks, Normalisasi Min-Max, Perumusan Skor Model (X @ w), Evaluasi Loss Function (MSE), Penurunan Analitis Gradien Bobot, Algoritma Optimasi Gradient Descent, hingga Studi Kasus Penilaian Kelayakan Beasiswa Mahasiswa.</b>
 </p>
 
 ---
@@ -204,7 +204,7 @@ Di mana semua fitur dipetakan seragam ke interval $[0, 1]$.
 
 ---
 
-### 3. Vektor Bobot ($w$) dan Prediksi Model ($X @ w$)
+### 3. Vektor Bobot (w) dan Prediksi Model (X @ w)
 
 Model linier memetakan kombinasi linier fitur ternormalisasi menjadi estimasi skor kelayakan tunggal:
 
@@ -231,14 +231,21 @@ $$
 
 Fungsi loss mengukur agregat kuadrat jarak antara estimasi model $\hat{y}$ dengan ground truth $y$:
 
-1. **Residual Error Vector ($e$):**
-   $$e = \hat{y} - y$$
-2. **Mean Squared Error (MSE):**
-   $$L(w) = \frac{1}{N} \sum_{i=1}^{N} (\hat{y}_i - y_i)^2 = \frac{1}{N} \|X_{\text{norm}} w - y\|^2 = \frac{1}{N} e^T e$$
+**1. Residual Error Vector ($e$):**
+
+$$
+e = \hat{y} - y
+$$
+
+**2. Mean Squared Error (MSE):**
+
+$$
+L(w) = \frac{1}{N} \sum_{i=1}^{N} (\hat{y}_i - y_i)^2 = \frac{1}{N} \|X_{\text{norm}} w - y\|^2 = \frac{1}{N} e^T e
+$$
 
 ---
 
-### 5. Penurunan Matematis Gradient ($\nabla_w L$)
+### 5. Penurunan Matematis Gradien Bobot (Gradient Descent)
 
 Untuk mengetahui arah perubahan bobot yang meminimalkan loss, kita hitung turunan parsial $L(w)$ terhadap setiap elemen vektor $w$:
 
@@ -438,7 +445,7 @@ kelas = np.where(score_baru >= threshold, "LAYAK", "BELUM")
 
 > **Analisis:** Gita mendapatkan skor tertinggi ($1.0385$) berkat kombinasi IPK/presensi prima dan tingkat ekonomi rendah. Sebaliknya, Hadi tereliminasi karena seluruh indikatornya berada di bawah standar beasiswa.
 
-#### 2. Tugas 2: Eksperimen Learning Rate ($\alpha$)
+#### 2. Tugas 2: Eksperimen Learning Rate (alpha)
 
 | Learning Rate ($\alpha$) | Total Iterasi | Loss Akhir | Bobot Akhir $[w_0, w_1, w_2, w_3]$ | Karakteristik Belajar |
 | :---: | :---: | :---: | :---: | :--- |
