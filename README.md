@@ -207,7 +207,7 @@ Di mana semua fitur dipetakan seragam ke interval $[0, 1]$.
 ### 3. Vektor Bobot (w) dan Prediksi Model (X @ w)
 
 Model linier memetakan kombinasi linier fitur ternormalisasi menjadi estimasi skor kelayakan tunggal:
-
+ 
 $$
 \hat{y} = X_{\text{norm}} @ w
 $$
